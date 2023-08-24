@@ -23,15 +23,23 @@ router.get(`/`, async (req, res) => {
 });
 
 router.get(`/:id`, async (req, res) => {
-  if (!mongoose.isValidObjectId(req.params.id)) {
-    return res.status(400).send('Invalid Product ID');
-  }
-  const product = await Product.findById(req.params.id).populate('category');
+  try {
+    const productId = req.params.id;
 
-  if (!product) {
-    res.status(500).json({ success: false });
+    if (!mongoose.isValidObjectId(productId)) {
+      return res.status(400).send('Invalid Product ID');
+    }
+
+    const product = await Product.findById(productId).populate('category');
+
+    if (!product) {
+      return res.status(500).json({ success: false });
+    }
+
+    res.send(product);
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
   }
-  res.send(product);
 });
 
 router.post(`/`, async (req, res) => {
