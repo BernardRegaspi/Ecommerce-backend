@@ -5,7 +5,7 @@ const morgain = require('morgan');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const authJwt = require('./helpers/jwt');
-const errorHandler = require('./helpers/error-handler')
+const errorHandler = require('./helpers/error-handler');
 
 app.use(cors());
 app.options('*', cors());
@@ -16,6 +16,7 @@ require('dotenv/config');
 app.use(bodyParser.json());
 app.use(morgain('tiny'));
 app.use(authJwt());
+app.use('/public/uploads', express.static(__dirname + '/public/uploads'));
 app.use(errorHandler);
 
 // Routes

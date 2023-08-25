@@ -6,34 +6,26 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 
 router.get(`/`, async (req, res) => {
-  try {
-    const userList = await User.find().select('-passwordHash');
+  const userList = await User.find().select('-passwordHash');
 
-    if (!userList) {
-      res.status(500).json({ success: false });
-    }
-    res.send(userList);
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+  if (!userList) {
+    res.status(500).json({ success: false });
   }
+  res.send(userList);
 });
 
 router.get('/:id', async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).select('-passwordHash');
-    if (!user) {
-      res
-        .status(404)
-        .json({ message: 'The user with the given ID was not found.' });
-    }
-    res.status(200).send(user);
-  } catch (error) {
-    res.status(500).json({ success: false, error: error.message });
+  const user = await User.findById(req.params.id).select('-passwordHash');
+  if (!user) {
+    res
+      .status(500)
+      .json({ message: 'The user with the given ID was not found.' });
   }
+  res.status(200).send(user);
 });
 
-function createUser(req) {
-  return new User({
+router.post('/', async (req, res) => {
+  let user = new User({
     name: req.body.name,
     email: req.body.email,
     passwordHash: bcrypt.hashSync(req.body.password, 10),
@@ -45,10 +37,7 @@ function createUser(req) {
     city: req.body.city,
     country: req.body.country,
   });
-}
-
-router.post('/', async (req, res) => {
-  let user = await createUser(req).save();
+  user = await user.save();
 
   if (!user) return res.status(400).send('the user cannot be created!');
 
@@ -69,7 +58,7 @@ router.put('/:id', async (req, res) => {
     {
       name: req.body.name,
       email: req.body.email,
-      passwordHash: newPassword,
+      passwordHash: bcrypt.hashSync(req.body.password, 10),
       phone: req.body.phone,
       isAdmin: req.body.isAdmin,
       street: req.body.street,
@@ -109,7 +98,19 @@ router.post('/login', async (req, res) => {
 });
 
 router.post('/register', async (req, res) => {
-  let user = await createUser(req).save();
+  let user = new User({
+    name: req.body.name,
+    email: req.body.email,
+    passwordHash: bcrypt.hashSync(req.body.password, 10),
+    phone: req.body.phone,
+    isAdmin: req.body.isAdmin,
+    street: req.body.street,
+    apartment: req.body.apartment,
+    zip: req.body.zip,
+    city: req.body.city,
+    country: req.body.country,
+  });
+  user = await user.save();
 
   if (!user) return res.status(400).send('the user cannot be created!');
 
@@ -146,6 +147,5 @@ router.delete('/:id', (req, res) => {
     });
 });
 
-module.exports = router;
 
 module.exports = router;
